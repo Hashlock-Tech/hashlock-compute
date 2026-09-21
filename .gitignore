@@ -1,0 +1,14 @@
+# Anchor / Solana (weeks 2 to 3)
+target/
+.anchor/
+test-ledger/
+**/*.so
+# Node
+node_modules/
+dist/
+# Python
+__pycache__/
+*.pyc
+# Local
+.env
+.DS_Store
