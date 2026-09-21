@@ -1,0 +1,153 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hashlock.markets/schemas/compute/sla_evaluated/1.0.0",
+  "title": "SLA_EVALUATED payload",
+  "description": "The verdict of a versioned SLA policy over one or more USAGE_MEASURED events for one trade, and the payout ratio the escrow program enforces. A final evaluation carries a compact settlement attestation that the Solana program verifies on-chain.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "trade_id",
+    "terms_hash",
+    "policy",
+    "inputs",
+    "period",
+    "dimensions",
+    "outcome",
+    "payout_bps",
+    "final",
+    "evaluated_at"
+  ],
+  "properties": {
+    "trade_id": { "$ref": "#/$defs/hex32" },
+    "terms_hash": {
+      "$ref": "#/$defs/hex32",
+      "description": "Must equal the terms_hash of every referenced USAGE_MEASURED event and the seed of the escrow."
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version", "hash"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$" },
+        "hash": { "$ref": "#/$defs/hex32", "description": "SHA-256 of the canonical policy document. The escrow terms carry the same three fields; the program rejects a mismatch." }
+      }
+    },
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 4096,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["event_id", "payload_hash", "sequence"],
+        "properties": {
+          "event_id": { "type": "string" },
+          "payload_hash": { "$ref": "#/$defs/hex32", "description": "SHA-256 of canonical_json(payload) of the USAGE_MEASURED event." },
+          "sequence": { "type": "integer", "minimum": 1 }
+        }
+      },
+      "description": "Every USAGE_MEASURED event this verdict was computed from, by content hash. Contiguous sequences; the evaluator refuses gaps."
+    },
+    "period": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["start", "end"],
+      "properties": {
+        "start": { "type": "string", "format": "date-time" },
+        "end": { "type": "string", "format": "date-time" }
+      },
+      "description": "Union of the input windows."
+    },
+    "dimensions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uptime", "gpu_identity", "consumed_hours"],
+      "properties": {
+        "uptime": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["measured_ratio", "required_ratio", "result"],
+          "properties": {
+            "measured_ratio": { "$ref": "#/$defs/ratio", "description": "Time-weighted consolidated uptime over the period." },
+            "required_ratio": { "$ref": "#/$defs/ratio", "description": "Threshold from the policy." },
+            "result": { "$ref": "#/$defs/dimension_result" }
+          }
+        },
+        "gpu_identity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["contracted", "matched_windows", "total_windows", "result"],
+          "properties": {
+            "contracted": { "type": "string", "minLength": 1 },
+            "matched_windows": { "type": "integer", "minimum": 0 },
+            "total_windows": { "type": "integer", "minimum": 1 },
+            "result": { "$ref": "#/$defs/dimension_result" }
+          },
+          "description": "Whether the delivered GPUs were the contracted model and count. A mismatch in any window is a policy decision: the reference policy treats it as FAIL for the whole period."
+        },
+        "consumed_hours": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["delivered", "contracted", "delivery_ratio", "variance_rel_max", "variance_tolerance", "result"],
+          "properties": {
+            "delivered": { "$ref": "#/$defs/decimal", "description": "Sum of consolidated gpu_hours over the inputs." },
+            "contracted": { "$ref": "#/$defs/decimal", "description": "contracted_hours from the trade terms." },
+            "delivery_ratio": { "$ref": "#/$defs/ratio", "description": "min(1, delivered / contracted), 6 fractional digits, rounded down." },
+            "variance_rel_max": { "$ref": "#/$defs/ratio", "description": "Largest gpu_hours_rel variance across the inputs." },
+            "variance_tolerance": { "$ref": "#/$defs/ratio", "description": "Maximum tolerated variance from the policy. Above it the reading is not trusted and the dimension fails." },
+            "result": { "$ref": "#/$defs/dimension_result" }
+          }
+        }
+      }
+    },
+    "outcome": {
+      "type": "string",
+      "enum": ["PASS", "PARTIAL", "FAIL"],
+      "description": "PASS: release in full. PARTIAL: settle payout_bps to the provider, remainder to the buyer. FAIL: refund in full."
+    },
+    "payout_bps": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 10000,
+      "description": "Share of the locked amount owed to the provider, in basis points. 10000 on PASS, 0 on FAIL, strictly between on PARTIAL. Computed by the policy; enforced by the program."
+    },
+    "payout_rule": {
+      "type": "string",
+      "maxLength": 256,
+      "description": "Human-readable statement of the formula the policy applied, for auditors. Informational; the numbers above are authoritative."
+    },
+    "final": {
+      "type": "boolean",
+      "description": "True when this verdict closes the trade and may be submitted to the escrow. Interim verdicts (false) are informational and carry no attestation."
+    },
+    "evaluated_at": { "type": "string", "format": "date-time" },
+    "settlement_attestation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["message_hex", "signature", "key_id"],
+      "properties": {
+        "message_hex": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{294}$",
+          "description": "147-byte fixed-layout message, hex encoded, defined in docs/escrow-spec.md: domain tag 'HLCSETL1' (8) || trade_id (32) || terms_hash (32) || policy_hash (32) || payout_bps (2, big-endian) || outcome (1: 0 FAIL, 1 PARTIAL, 2 PASS) || evaluated_at unix seconds (8, big-endian) || sla_payload_hash (32, SHA-256 of canonical_json of this payload with settlement_attestation removed)."
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$",
+          "description": "Base64url Ed25519 signature over the raw message bytes, by the key named in the trade terms."
+        },
+        "key_id": { "type": "string", "minLength": 1, "maxLength": 64 }
+      },
+      "description": "Present when final is true. The Solana program verifies this signature, not the JSON envelope, because the fixed layout fits in a transaction and needs no JSON parsing on-chain."
+    }
+  },
+  "if": { "properties": { "final": { "const": true } } },
+  "then": { "required": ["settlement_attestation"] },
+  "$defs": {
+    "hex32": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "decimal": { "type": "string", "pattern": "^[0-9]+(\\.[0-9]{1,6})?$" },
+    "ratio": { "type": "string", "pattern": "^(0(\\.[0-9]{1,6})?|1(\\.0{1,6})?)$" },
+    "dimension_result": { "type": "string", "enum": ["PASS", "FAIL"] }
+  }
+}

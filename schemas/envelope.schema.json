@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hashlock.markets/schemas/compute/envelope/1.0.0",
+  "title": "Signed evidence envelope",
+  "description": "Common envelope for every evidence event emitted by the metering and SLA evaluation layer. The signature covers the RFC 8785 canonical JSON bytes of the payload object only. Consumers verify with the Ed25519 public key registered for key_id; no callback is required.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_type",
+    "event_id",
+    "emitted_at",
+    "key_id",
+    "signature_alg",
+    "signature",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Version of the envelope and payload schema pair, semantic versioning.",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": ["USAGE_MEASURED", "SLA_EVALUATED"]
+    },
+    "event_id": {
+      "type": "string",
+      "description": "UUID v7 assigned by the emitter. Unique per event, monotonic in time.",
+      "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+    },
+    "emitted_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC 3339 UTC timestamp at which the emitter signed the event."
+    },
+    "key_id": {
+      "type": "string",
+      "description": "Identifier of the Ed25519 signing key. The escrow terms name the accepted key_id and public key, so key rotation is a change of terms, never a change of schema.",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "signature_alg": {
+      "type": "string",
+      "const": "ed25519"
+    },
+    "signature": {
+      "type": "string",
+      "description": "Base64url, no padding, 64-byte Ed25519 signature over canonical_json(payload).",
+      "pattern": "^[A-Za-z0-9_-]{86}$"
+    },
+    "payload_hash": {
+      "type": "string",
+      "description": "Optional convenience field: hex SHA-256 of canonical_json(payload). Consumers must recompute it; it is not covered by the signature.",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "payload": {
+      "type": "object",
+      "description": "Event-specific payload. Validated against usage_measured.schema.json or sla_evaluated.schema.json according to event_type."
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "event_type": { "const": "USAGE_MEASURED" } } },
+      "then": { "properties": { "payload": { "$ref": "https://hashlock.markets/schemas/compute/usage_measured/1.0.0" } } }
+    },
+    {
+      "if": { "properties": { "event_type": { "const": "SLA_EVALUATED" } } },
+      "then": { "properties": { "payload": { "$ref": "https://hashlock.markets/schemas/compute/sla_evaluated/1.0.0" } } }
+    }
+  ]
+}
