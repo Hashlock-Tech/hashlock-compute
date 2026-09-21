@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "event_type": "USAGE_MEASURED",
+  "event_id": "01a0c8fc-b600-7b5d-91a2-c2fab39eabaf",
+  "emitted_at": "2026-09-22T12:00:00Z",
+  "key_id": "hashlock-compute-test-2026-09",
+  "signature_alg": "ed25519",
+  "signature": "c_AR1WwIDTMhBr7n5sHsVsUWAg031m9YLXm5LRsafR6E6wexCpc6n_TStBgwPDTRPuqUqvaiTBGUEPfNVkvEDQ",
+  "payload_hash": "dda9aede0c7f26b995e0ecfba8578ea86a9af08ba6006e60fe1ea7d879dc26a6",
+  "payload": {
+    "trade_id": "abbf25209c34aacc02b6cbbf5b0f771617d6a35538fb2229966af5fe7c6b17f7",
+    "terms_hash": "7c655fb7e9f5ca68b7b49a8ea683f752dd89b08125d63beabffb3faa0f99b07a",
+    "window": {
+      "start": "2026-09-22T00:00:00Z",
+      "end": "2026-09-22T12:00:00Z"
+    },
+    "sequence": 1,
+    "gpu_spec_contracted": "H100-SXM-80GB",
+    "sources": {
+      "provider_reported": {
+        "source_id": "provider:example-cloud:billing-api",
+        "gpu_hours": "48.000000",
+        "uptime_ratio": "1.000000",
+        "gpu_model_observed": "NVIDIA H100 80GB HBM3",
+        "gpu_count_observed": 4,
+        "samples": 720,
+        "collected_at": "2026-09-22T12:00:00Z"
+      },
+      "telemetry": {
+        "source_id": "telemetry:dcgm-exporter:cluster-7",
+        "gpu_hours": "47.250000",
+        "uptime_ratio": "0.984375",
+        "gpu_model_observed": "NVIDIA H100 80GB HBM3",
+        "gpu_count_observed": 4,
+        "samples": 43200,
+        "collected_at": "2026-09-22T12:00:00Z",
+        "raw_digest": "7a10140eca7e7d1381becdfcb22e7ed144ae4efc1ab096dfae7443080cfe2a51"
+      }
+    },
+    "consolidated": {
+      "gpu_hours": "47.250000",
+      "uptime_ratio": "0.984375",
+      "gpu_identity_match": true,
+      "method": "min"
+    },
+    "variance": {
+      "gpu_hours_abs": "0.750000",
+      "gpu_hours_rel": "0.015625",
+      "uptime_abs": "0.015625"
+    }
+  }
+}

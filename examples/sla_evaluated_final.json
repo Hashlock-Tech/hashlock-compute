@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "event_type": "SLA_EVALUATED",
+  "event_id": "01a0cb94-77e0-741b-9f83-437e1f42b049",
+  "emitted_at": "2026-09-23T00:05:00Z",
+  "key_id": "hashlock-compute-test-2026-09",
+  "signature_alg": "ed25519",
+  "signature": "PhO0BZwovud7_8UqFhJRv_qXZ_X_ArMj8WHriDBm6sGxBZleMR89hopi626FeArQig2Wzgkza5x3b_uuX9TSBA",
+  "payload_hash": "835f9ad865de425480ec45e895b3cc1cc81e91dfc912d4f6a790b16ee1dc952b",
+  "payload": {
+    "trade_id": "abbf25209c34aacc02b6cbbf5b0f771617d6a35538fb2229966af5fe7c6b17f7",
+    "terms_hash": "7c655fb7e9f5ca68b7b49a8ea683f752dd89b08125d63beabffb3faa0f99b07a",
+    "policy": {
+      "id": "hashlock-compute-reference",
+      "version": "1.0.0",
+      "hash": "098109477ccf15a6bda81bb6634a17eb2b15bb7c9f887db9575e432031e2a6d8"
+    },
+    "inputs": [
+      {
+        "event_id": "01a0c8fc-b600-7b5d-91a2-c2fab39eabaf",
+        "payload_hash": "dda9aede0c7f26b995e0ecfba8578ea86a9af08ba6006e60fe1ea7d879dc26a6",
+        "sequence": 1
+      },
+      {
+        "event_id": "01a0cb8f-e400-7ced-8bcb-4e6f9dae42e9",
+        "payload_hash": "d0ae3cfe56ccfb18f95879cecd1173bff9aed8189b6d9c254697b5cc9147ac09",
+        "sequence": 2
+      }
+    ],
+    "period": {
+      "start": "2026-09-22T00:00:00Z",
+      "end": "2026-09-23T00:00:00Z"
+    },
+    "dimensions": {
+      "uptime": {
+        "measured_ratio": "0.867188",
+        "required_ratio": "0.950000",
+        "result": "FAIL"
+      },
+      "gpu_identity": {
+        "contracted": "H100-SXM-80GB",
+        "matched_windows": 2,
+        "total_windows": 2,
+        "result": "PASS"
+      },
+      "consumed_hours": {
+        "delivered": "83.250000",
+        "contracted": "96.000000",
+        "delivery_ratio": "0.867188",
+        "variance_rel_max": "0.250000",
+        "variance_tolerance": "0.300000",
+        "result": "FAIL"
+      }
+    },
+    "outcome": "PARTIAL",
+    "payout_bps": 8671,
+    "payout_rule": "PARTIAL payout_bps = floor(min(1, delivered / contracted) * 10000); FAIL if identity mismatch or variance above tolerance; PASS if all dimensions pass",
+    "final": true,
+    "evaluated_at": "2026-09-23T00:05:00Z",
+    "settlement_attestation": {
+      "message_hex": "484c435345544c31abbf25209c34aacc02b6cbbf5b0f771617d6a35538fb2229966af5fe7c6b17f77c655fb7e9f5ca68b7b49a8ea683f752dd89b08125d63beabffb3faa0f99b07a098109477ccf15a6bda81bb6634a17eb2b15bb7c9f887db9575e432031e2a6d821df01000000006ab317ac30336e1ac3ca20192b191117ede2b85d32d24a7e5e89023393468d279e7f176d",
+      "signature": "Jc0jyKHMORLgmn1Y3YD0tlUjkvFGgF5vSD1M88ZpnNF104EBe0A5lNoXWF5SH2KC3ZBOsL843hKd-emwIt4SCA",
+      "key_id": "hashlock-compute-test-2026-09"
+    }
+  }
+}

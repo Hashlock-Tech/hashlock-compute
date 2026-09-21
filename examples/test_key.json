@@ -1,0 +1,7 @@
+{
+  "key_id": "hashlock-compute-test-2026-09",
+  "purpose": "examples and conformance tests only, never production",
+  "private_key_b64url": "iG-te8ThcsGGwv0zKkooU-uj-GtFIz3xc-JYgN_XoVA",
+  "public_key_b64url": "KBLoIUgaVxGKofrUpT9gBK9Cjnu6rOtCgldi_xEcI0o",
+  "public_key_hex": "2812e821481a57118aa1fad4a53f6004af428e7bbaaceb42825762ff111c234a"
+}
